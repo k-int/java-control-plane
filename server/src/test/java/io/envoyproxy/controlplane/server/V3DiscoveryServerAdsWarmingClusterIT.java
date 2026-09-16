@@ -191,7 +191,7 @@ public class V3DiscoveryServerAdsWarmingClusterIT {
     ScopedRouteConfiguration scopedRoute = TestResources.createScopedRoute(scopedRouteName, routeName);
 
     // here we have new version of resources other than CDS.
-    return Snapshot.create(
+    return Snapshot.createWithScopedRoutes(
         ImmutableList.of(cluster),
         "1",
         ImmutableList.of(endpoint),

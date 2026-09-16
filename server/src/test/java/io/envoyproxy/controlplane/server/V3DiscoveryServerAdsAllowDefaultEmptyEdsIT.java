@@ -63,7 +63,7 @@ public class V3DiscoveryServerAdsAllowDefaultEmptyEdsIT {
               "route0");
 
           // Construct a snapshot with no_endpoints clusters which does not have EDS data
-          Snapshot snapshot = Snapshot.create(
+          Snapshot snapshot = Snapshot.createWithScopedRoutes(
               ImmutableList.of(upstream, no_endpoints),
               ImmutableList.of(endpoint),
               ImmutableList.of(listener),
