@@ -56,7 +56,7 @@ public class SnapshotTest {
   public void createSingleVersionSetsResourcesCorrectly() {
     final String version = UUID.randomUUID().toString();
 
-    Snapshot snapshot = Snapshot.create(
+    Snapshot snapshot = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),
@@ -101,7 +101,7 @@ public class SnapshotTest {
     final String scopedRoutesVersion = UUID.randomUUID().toString();
     final String secretsVersion = UUID.randomUUID().toString();
 
-    Snapshot snapshot = Snapshot.create(
+    Snapshot snapshot = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER), clustersVersion,
         ImmutableList.of(ENDPOINT), endpointsVersion,
         ImmutableList.of(LISTENER), listenersVersion,
@@ -192,7 +192,7 @@ public class SnapshotTest {
   @Test
   @SuppressWarnings("unchecked")
   public void resourcesReturnsExpectedResources() {
-    Snapshot snapshot = Snapshot.create(
+    Snapshot snapshot = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),
@@ -235,7 +235,7 @@ public class SnapshotTest {
   public void versionReturnsExpectedVersion() {
     final String version = UUID.randomUUID().toString();
 
-    Snapshot snapshot = Snapshot.create(
+    Snapshot snapshot = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),
@@ -259,7 +259,7 @@ public class SnapshotTest {
   @Test
   public void ensureConsistentReturnsWithoutExceptionForConsistentSnapshot()
       throws SnapshotConsistencyException {
-    Snapshot snapshot = Snapshot.create(
+    Snapshot snapshot = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),
@@ -273,7 +273,7 @@ public class SnapshotTest {
 
   @Test
   public void ensureConsistentThrowsIfEndpointOrRouteRefCountMismatch() {
-    Snapshot snapshot1 = Snapshot.create(
+    Snapshot snapshot1 = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(),
         ImmutableList.of(LISTENER),
@@ -290,7 +290,7 @@ public class SnapshotTest {
             ENDPOINT_TYPE_URL,
             CLUSTER_NAME));
 
-    Snapshot snapshot2 = Snapshot.create(
+    Snapshot snapshot2 = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),
@@ -313,7 +313,7 @@ public class SnapshotTest {
     final String otherClusterName = "someothercluster0";
     final String otherRouteName = "someotherroute0";
 
-    Snapshot snapshot1 = Snapshot.create(
+    Snapshot snapshot1 = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(TestResources.createEndpoint(otherClusterName, ENDPOINT_PORT)),
         ImmutableList.of(LISTENER),
@@ -331,7 +331,7 @@ public class SnapshotTest {
             CLUSTER_TYPE_URL,
             otherClusterName));
 
-    Snapshot snapshot2 = Snapshot.create(
+    Snapshot snapshot2 = Snapshot.createWithScopedRoutes(
         ImmutableList.of(CLUSTER),
         ImmutableList.of(ENDPOINT),
         ImmutableList.of(LISTENER),

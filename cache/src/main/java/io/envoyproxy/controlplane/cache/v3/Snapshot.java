@@ -5,6 +5,7 @@ import static io.envoyproxy.controlplane.cache.Resources.TYPE_URLS_TO_RESOURCE_T
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Message;
 import io.envoyproxy.controlplane.cache.Resources;
 import io.envoyproxy.controlplane.cache.Resources.ResourceType;
@@ -30,41 +31,26 @@ import java.util.Set;
 @AutoValue
 public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot {
 
-  /**
-   * Returns a new {@link io.envoyproxy.controlplane.cache.v3.Snapshot} instance that is versioned uniformly across all
-   * resources.
-   *
-   * @param clusters     the cluster resources in this snapshot
-   * @param endpoints    the endpoint resources in this snapshot
-   * @param listeners    the listener resources in this snapshot
-   * @param routes       the route resources in this snapshot
-   * @param scopedRoutes the scopedRoute resources in this snapshot
-   * @param version      the version associated with all resources in this snapshot
-   */
+  /** Creates a snapshot with a common version. */
   public static Snapshot create(
       Iterable<Cluster> clusters,
       Iterable<ClusterLoadAssignment> endpoints,
       Iterable<Listener> listeners,
       Iterable<RouteConfiguration> routes,
-      Iterable<ScopedRouteConfiguration> scopedRoutes,
       Iterable<Secret> secrets,
       String version) {
-
-    return create(clusters, endpoints, listeners, routes, secrets, Collections.emptySet(), version);
+    return createWithScopedRoutes(
+        clusters,
+        endpoints,
+        listeners,
+        routes,
+        Collections.emptySet(),
+        secrets,
+        Collections.emptySet(),
+        version);
   }
 
-  /**
-   * Returns a new {@link io.envoyproxy.controlplane.cache.v3.Snapshot} instance that is versioned uniformly across all
-   * resources, including ECDS extension configs.
-   *
-   * @param clusters         the cluster resources in this snapshot
-   * @param endpoints        the endpoint resources in this snapshot
-   * @param listeners        the listener resources in this snapshot
-   * @param routes           the route resources in this snapshot
-   * @param secrets          the secret resources in this snapshot
-   * @param extensionConfigs the ECDS extension config resources in this snapshot
-   * @param version          the version associated with all resources in this snapshot
-   */
+  /** Creates a snapshot with a common version. */
   public static Snapshot create(
       Iterable<Cluster> clusters,
       Iterable<ClusterLoadAssignment> endpoints,
@@ -73,39 +59,18 @@ public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot
       Iterable<Secret> secrets,
       Iterable<TypedExtensionConfig> extensionConfigs,
       String version) {
-
-    return new AutoValue_Snapshot(
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(clusters), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(endpoints), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(listeners), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(routes), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(scopedRoutes), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(secrets), version),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(extensionConfigs), version));
+    return createWithScopedRoutes(
+        clusters,
+        endpoints,
+        listeners,
+        routes,
+        Collections.emptySet(),
+        secrets,
+        extensionConfigs,
+        version);
   }
 
-  /**
-   * Returns a new {@link io.envoyproxy.controlplane.cache.v3.Snapshot} instance that has separate versions for each
-   * resource type.
-   *
-   * @param clusters            the cluster resources in this snapshot
-   * @param clustersVersion     the version of the cluster resources
-   * @param endpoints           the endpoint resources in this snapshot
-   * @param endpointsVersion    the version of the endpoint resources
-   * @param listeners           the listener resources in this snapshot
-   * @param listenersVersion    the version of the listener resources
-   * @param routes              the route resources in this snapshot
-   * @param routesVersion       the version of the route resources
-   * @param scopedRoutes        the route resources in this snapshot
-   * @param scopedRoutesVersion the version of the route resources
-   */
+  /** Creates a snapshot with independent resource-type versions. */
   public static Snapshot create(
       Iterable<Cluster> clusters,
       String clustersVersion,
@@ -115,32 +80,26 @@ public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot
       String listenersVersion,
       Iterable<RouteConfiguration> routes,
       String routesVersion,
-      Iterable<ScopedRouteConfiguration> scopedRoutes,
-      String scopedRoutesVersion,
       Iterable<Secret> secrets,
       String secretsVersion) {
-
-    return create(clusters, clustersVersion, endpoints, endpointsVersion, listeners, listenersVersion,
-        routes, routesVersion, secrets, secretsVersion, Collections.emptySet(), "");
+    return createWithScopedRoutes(
+        clusters,
+        clustersVersion,
+        endpoints,
+        endpointsVersion,
+        listeners,
+        listenersVersion,
+        routes,
+        routesVersion,
+        Collections.emptySet(),
+        "",
+        secrets,
+        secretsVersion,
+        Collections.emptySet(),
+        "");
   }
 
-  /**
-   * Returns a new {@link io.envoyproxy.controlplane.cache.v3.Snapshot} instance that has separate versions for each
-   * resource type, including ECDS extension configs.
-   *
-   * @param clusters                the cluster resources in this snapshot
-   * @param clustersVersion         the version of the cluster resources
-   * @param endpoints               the endpoint resources in this snapshot
-   * @param endpointsVersion        the version of the endpoint resources
-   * @param listeners               the listener resources in this snapshot
-   * @param listenersVersion        the version of the listener resources
-   * @param routes                  the route resources in this snapshot
-   * @param routesVersion           the version of the route resources
-   * @param secrets                 the secret resources in this snapshot
-   * @param secretsVersion          the version of the secret resources
-   * @param extensionConfigs        the ECDS extension config resources in this snapshot
-   * @param extensionConfigsVersion the version of the ECDS extension config resources
-   */
+  /** Creates a snapshot with independent resource-type versions. */
   public static Snapshot create(
       Iterable<Cluster> clusters,
       String clustersVersion,
@@ -154,23 +113,118 @@ public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot
       String secretsVersion,
       Iterable<TypedExtensionConfig> extensionConfigs,
       String extensionConfigsVersion) {
+    return createWithScopedRoutes(
+        clusters,
+        clustersVersion,
+        endpoints,
+        endpointsVersion,
+        listeners,
+        listenersVersion,
+        routes,
+        routesVersion,
+        Collections.emptySet(),
+        "",
+        secrets,
+        secretsVersion,
+        extensionConfigs,
+        extensionConfigsVersion);
+  }
 
-    // TODO(snowp): add a builder alternative
+  /** Creates a snapshot with a common version. */
+  public static Snapshot createWithScopedRoutes(
+      Iterable<Cluster> clusters,
+      Iterable<ClusterLoadAssignment> endpoints,
+      Iterable<Listener> listeners,
+      Iterable<RouteConfiguration> routes,
+      Iterable<ScopedRouteConfiguration> scopedRoutes,
+      Iterable<Secret> secrets,
+      String version) {
+    return createWithScopedRoutes(
+        clusters,
+        endpoints,
+        listeners,
+        routes,
+        scopedRoutes,
+        secrets,
+        Collections.emptySet(),
+        version);
+  }
+
+  /** Creates a snapshot with a common version. */
+  public static Snapshot createWithScopedRoutes(
+      Iterable<Cluster> clusters,
+      Iterable<ClusterLoadAssignment> endpoints,
+      Iterable<Listener> listeners,
+      Iterable<RouteConfiguration> routes,
+      Iterable<ScopedRouteConfiguration> scopedRoutes,
+      Iterable<Secret> secrets,
+      Iterable<TypedExtensionConfig> extensionConfigs,
+      String version) {
     return new AutoValue_Snapshot(
-        SnapshotResources.create(generateSnapshotResourceIterable(clusters),
-            clustersVersion),
-        SnapshotResources.create(generateSnapshotResourceIterable(endpoints),
-            endpointsVersion),
-        SnapshotResources.create(generateSnapshotResourceIterable(listeners),
-            listenersVersion),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(routes), routesVersion),
-        SnapshotResources
-            .create(generateSnapshotResourceIterable(scopedRoutes), scopedRoutesVersion),
-        SnapshotResources.create(generateSnapshotResourceIterable(secrets),
-            secretsVersion),
-        SnapshotResources.create(generateSnapshotResourceIterable(extensionConfigs),
-            extensionConfigsVersion));
+        SnapshotResources.create(generateSnapshotResourceIterable(clusters), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(endpoints), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(listeners), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(routes), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(scopedRoutes), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(secrets), version),
+        SnapshotResources.create(generateSnapshotResourceIterable(extensionConfigs), version));
+  }
+
+  /** Creates a snapshot with independent resource-type versions. */
+  public static Snapshot createWithScopedRoutes(
+      Iterable<Cluster> clusters,
+      String clustersVersion,
+      Iterable<ClusterLoadAssignment> endpoints,
+      String endpointsVersion,
+      Iterable<Listener> listeners,
+      String listenersVersion,
+      Iterable<RouteConfiguration> routes,
+      String routesVersion,
+      Iterable<ScopedRouteConfiguration> scopedRoutes,
+      String scopedRoutesVersion,
+      Iterable<Secret> secrets,
+      String secretsVersion) {
+    return createWithScopedRoutes(
+        clusters,
+        clustersVersion,
+        endpoints,
+        endpointsVersion,
+        listeners,
+        listenersVersion,
+        routes,
+        routesVersion,
+        scopedRoutes,
+        scopedRoutesVersion,
+        secrets,
+        secretsVersion,
+        Collections.emptySet(),
+        "");
+  }
+
+  /** Creates a snapshot with independent resource-type versions. */
+  public static Snapshot createWithScopedRoutes(
+      Iterable<Cluster> clusters,
+      String clustersVersion,
+      Iterable<ClusterLoadAssignment> endpoints,
+      String endpointsVersion,
+      Iterable<Listener> listeners,
+      String listenersVersion,
+      Iterable<RouteConfiguration> routes,
+      String routesVersion,
+      Iterable<ScopedRouteConfiguration> scopedRoutes,
+      String scopedRoutesVersion,
+      Iterable<Secret> secrets,
+      String secretsVersion,
+      Iterable<TypedExtensionConfig> extensionConfigs,
+      String extensionConfigsVersion) {
+    return new AutoValue_Snapshot(
+        SnapshotResources.create(generateSnapshotResourceIterable(clusters), clustersVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(endpoints), endpointsVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(listeners), listenersVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(routes), routesVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(scopedRoutes), scopedRoutesVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(secrets), secretsVersion),
+        SnapshotResources.create(generateSnapshotResourceIterable(extensionConfigs), extensionConfigsVersion));
   }
 
   /**
@@ -180,7 +234,7 @@ public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot
    */
   public static Snapshot createEmpty(String version) {
     return create(Collections.emptySet(), Collections.emptySet(),
-            Collections.emptySet(), Collections.emptySet(), Collections.emptySet(), Collections.emptySet(), version);
+            Collections.emptySet(), Collections.emptySet(), Collections.emptySet(), version);
   }
 
   /**
@@ -234,19 +288,14 @@ public abstract class Snapshot extends io.envoyproxy.controlplane.cache.Snapshot
     ensureAllResourceNamesExist(Resources.V3.CLUSTER_TYPE_URL, Resources.V3.ENDPOINT_TYPE_URL,
         clusterEndpointRefs, endpoints().versionedResources());
 
-    Set<String> listenerRouteRefs =
-        Resources.getResourceReferences(listeners().versionedResources().values());
-
+    // RDS tables may be referenced by listeners, scoped routes, or both.
+    // Validate their union; requiring each source to reference every table rejects valid SRDS snapshots.
+    Set<String> routeRefs = ImmutableSet.<String>builder()
+        .addAll(Resources.getResourceReferences(listeners().versionedResources().values()))
+        .addAll(Resources.getResourceReferences(scopedRoutes().versionedResources().values()))
+        .build();
     ensureAllResourceNamesExist(Resources.V3.LISTENER_TYPE_URL, Resources.V3.ROUTE_TYPE_URL,
-        listenerRouteRefs, routes().versionedResources());
-
-    Set<String> srdsRefs = Resources.getResourceReferences(scopedRoutes().versionedResources().values());
-    ensureAllResourceNamesExist(
-        Resources.V3.SCOPED_ROUTE_TYPE_URL,
-        Resources.V3.ROUTE_TYPE_URL,
-        srdsRefs,
-        routes().versionedResources()
-    );
+        routeRefs, routes().versionedResources());
   }
 
   /**

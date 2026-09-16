@@ -34,7 +34,7 @@ class V3TestSnapshots {
     RouteConfiguration route = TestResources.createRoute(routeName, clusterName);
     ScopedRouteConfiguration scopedRoute = TestResources.createScopedRoute(scopedRouteName, routeName);
 
-    return Snapshot.create(
+    return Snapshot.createWithScopedRoutes(
         ImmutableList.of(cluster),
         ImmutableList.of(endpoint),
         ImmutableList.of(listener),
@@ -81,7 +81,7 @@ class V3TestSnapshots {
     RouteConfiguration route = TestResources.createRoute(routeName, clusterName);
     ScopedRouteConfiguration scopedRoute = TestResources.createScopedRoute(scopedRouteName, routeName);
 
-    return Snapshot.create(
+    return Snapshot.createWithScopedRoutes(
         ImmutableList.of(cluster),
         ImmutableList.of(),
         ImmutableList.of(listener),

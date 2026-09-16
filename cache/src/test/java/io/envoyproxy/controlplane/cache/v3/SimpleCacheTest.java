@@ -49,7 +49,7 @@ public class SimpleCacheTest {
   private static final String VERSION1 = UUID.randomUUID().toString();
   private static final String VERSION2 = UUID.randomUUID().toString();
 
-  private static final Snapshot SNAPSHOT1 = Snapshot.create(
+  private static final Snapshot SNAPSHOT1 = Snapshot.createWithScopedRoutes(
       ImmutableList.of(Cluster.newBuilder().setName(CLUSTER_NAME).build()),
       ImmutableList.of(ClusterLoadAssignment.getDefaultInstance()),
       ImmutableList.of(Listener.newBuilder().setName(LISTENER_NAME).build()),
@@ -59,7 +59,7 @@ public class SimpleCacheTest {
       ImmutableList.of(TypedExtensionConfig.newBuilder().setName(EXTENSION_CONFIG_NAME).build()),
       VERSION1);
 
-  private static final Snapshot SNAPSHOT2 = Snapshot.create(
+  private static final Snapshot SNAPSHOT2 = Snapshot.createWithScopedRoutes(
       ImmutableList.of(Cluster.newBuilder().setName(CLUSTER_NAME).build()),
       ImmutableList.of(ClusterLoadAssignment.getDefaultInstance()),
       ImmutableList.of(Listener.newBuilder().setName(LISTENER_NAME).build()),
@@ -69,7 +69,7 @@ public class SimpleCacheTest {
       ImmutableList.of(TypedExtensionConfig.newBuilder().setName(EXTENSION_CONFIG_NAME).build()),
       VERSION2);
 
-  private static final Snapshot MULTIPLE_RESOURCES_SNAPSHOT2 = Snapshot.create(
+  private static final Snapshot MULTIPLE_RESOURCES_SNAPSHOT2 = Snapshot.createWithScopedRoutes(
       ImmutableList.of(Cluster.newBuilder().setName(CLUSTER_NAME).build(),
           Cluster.newBuilder().setName(SECONDARY_CLUSTER_NAME).build()),
       ImmutableList.of(ClusterLoadAssignment.newBuilder().setClusterName(CLUSTER_NAME).build(),
