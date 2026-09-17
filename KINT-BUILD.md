@@ -1,12 +1,21 @@
 # K-Int scoped discovery candidate
 
-Local adoption candidate for Foundry backlog 000088; not published or released.
+Foundry backlog 000088. Exact-source publication approved; CI qualification
+passed (67 unit tests and seven Envoy integration tests). Publication is tracked
+in foundry-k8s's protected routing-library pipeline.
 
 - Upstream PR477 head: `7cd97fc5661a8d54f31792cf6dbb8a465c9d74ff`.
 - Portable compatibility repair: `0cd2e96` (separate from this packaging change).
-- Candidate parent/cache/server version: `1.0.55-kint.1`.
+- Exact release source: `69d7f1c504885bd46be1c9d0b385f7637f9683b6`.
+- Parent/cache/server release version: `1.0.55-kint.1`.
 - Generated Envoy API dependency: upstream `io.envoyproxy.controlplane:api:1.0.55`.
 - License: upstream Apache-2.0, preserved in `LICENSE`.
+
+Main preserves upstream's subsequent development history/version; it is not the
+source coordinate for the immutable K-Int release. Check out the exact release
+commit to reproduce its artifacts. Main cache/server production sources match
+that release; main's updated test dependencies and Envoy fixture have also passed
+all 74 tests. Generated API remains the published `1.0.55` dependency.
 
 Build the parent, cache and server with Maven 3.9.9 and JDK17:
 
@@ -22,7 +31,11 @@ verify test-container cleanup. Use a scrubbed process environment.
 The generated API project is intentionally excluded; consumers use the exact
 upstream published API artifact. Do not deploy this reactor using its inherited
 upstream publication settings. Remote publication requires the separately
-reviewed K-Int CI destination and credentials. Tagging/publication remain gated.
+reviewed K-Int CI destination and credentials. The protected foundry-k8s job
+uploads parent/cache/server through Maven Deploy Plugin to
+`https://maven.k-int.com/repository/maven-releases` (hosted); `/repository/releases`
+is the read-only consumption group. Use the manifest-pinned commit and manual
+publication job; never publish changed bytes under the same release version.
 
 The upstream PR commits and portable repair remain separable from K-Int package
 versions so a contribution can target the original PR branch. Nothing has been
