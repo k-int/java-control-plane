@@ -1,8 +1,9 @@
 # K-Int scoped discovery candidate
 
-Foundry backlog 000088. Exact-source publication approved; CI qualification
-passed (67 unit tests and seven Envoy integration tests). Publication is tracked
-in foundry-k8s's protected routing-library pipeline.
+Foundry backlog 000088. `1.0.55-kint.1` is published. Protected foundry-k8s pipeline
+`2856717726` passed 67 unit tests and seven Envoy integration tests, then job
+`16553518712` published and verified parent/cache/server artifacts. Consumer-group
+readback also matches the retained qualification bundle.
 
 - Upstream PR477 head: `7cd97fc5661a8d54f31792cf6dbb8a465c9d74ff`.
 - Portable compatibility repair: `0cd2e96` (separate from this packaging change).
